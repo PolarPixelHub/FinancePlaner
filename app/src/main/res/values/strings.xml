@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">FinancePlanerApp</string>
+    <string name="Amount">Amount:</string>
+    <string name="Amount_2">e.g., 123.45</string>
+    <string name="Type">Type:</string>
+    <string name="Date">Date:</string>
+    <string name="Date_2">YYYY-MM-DD</string>
+    <string name="Add_type">+</string>
+    <string name="View_Entries">View Entries</string>
 </resources>
