@@ -2,12 +2,13 @@ package pixelhub.financeplaner
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.widget.ArrayAdapter
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,33 +22,28 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etAmount: EditText
     private lateinit var tvDate: TextView
     private lateinit var btnAdd: ImageButton
+    private lateinit var btnTrack: Button
+    private lateinit var btnEntries: Button
     private val incomeTypes = mutableListOf<String>()
-
-    private lateinit var financeViewModel: FinanceViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize ViewModel
-        val factory = FinanceViewModelFactory(application)
-        financeViewModel = ViewModelProvider(this, factory)[FinanceViewModel::class.java]
-
-        // Observe income types and update the spinner
-        financeViewModel.incomeTypes.observe(this) { types ->
-            updateEntryTypeSpinner(types)
-        }
-        // Fetch distinct types from the database
-        CoroutineScope(Dispatchers.IO).launch {
-            financeViewModel.incomeTypes // Trigger LiveData observation
-        }
-        // Load entry types from the database
-        financeViewModel.loadIncomeTypes()
+        // Restore incomeTypes from SharedPreferences
+        val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val storedIncomeTypes = sharedPreferences.getStringSet("incomeTypes", setOf())
+        incomeTypes.addAll(storedIncomeTypes ?: emptySet())
 
         spinnerEntryTypes = findViewById(R.id.spinner_entry_types)
         etAmount = findViewById(R.id.et_amount)
         tvDate = findViewById(R.id.tv_date)
         btnAdd = findViewById(R.id.btnAdd)
+        btnTrack = findViewById(R.id.btnTrack)
+        btnEntries = findViewById(R.id.btnEntries)
+
+        // Set up spinner
+        updateEntryTypeSpinner(incomeTypes)
 
         // Set up spinner
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, incomeTypes)
@@ -63,6 +59,25 @@ class MainActivity : AppCompatActivity() {
         tvDate.setOnClickListener {
             showDatePicker()
         }
+
+        btnTrack.setOnClickListener {
+            trackCashflow()
+        }
+
+        btnEntries.setOnClickListener {
+            val intent = Intent(this, IncomeEntriesActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+
+    // Save incomeTypes to SharedPreferences
+    override fun onStop() {
+        super.onStop()
+        val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putStringSet("incomeTypes", incomeTypes.toSet())
+        editor.apply()
     }
 
     // Show dialog to create new entry type
@@ -117,10 +132,11 @@ class MainActivity : AppCompatActivity() {
         val date = tvDate.text.toString()
 
         if (amount != null && date.isNotEmpty()) {
-            val income = IncomeEntry(amount = amount, type = entryType, date = date)
-            // Insert the data in the database asynchronously
+            val income = IncomeEntity(amount = amount, type = entryType, date = date)
+            val db = DatabaseProvider.getDatabase(applicationContext)
+            val incomeDao = db.incomeDao()
             CoroutineScope(Dispatchers.IO).launch {
-                financeViewModel.addIncome(income)
+                incomeDao.insertIncome(income)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity, "Income tracked!", Toast.LENGTH_SHORT).show()
                 }
@@ -130,6 +146,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Update Spinner with new data
     private fun updateEntryTypeSpinner(types: List<String>) {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, types).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

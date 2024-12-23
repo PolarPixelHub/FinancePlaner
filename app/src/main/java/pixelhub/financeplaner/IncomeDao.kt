@@ -7,12 +7,9 @@ import androidx.room.Query
 @Dao
 interface IncomeDao {
     @Insert
-    suspend fun insertIncome(income: IncomeEntry)
+    suspend fun insertIncome(income: IncomeEntity)
 
     @Query("SELECT * FROM income ORDER BY date DESC")
-    suspend fun getAllIncome(): List<IncomeEntry>
+    suspend fun getAllIncomes(): List<IncomeEntity>
 
-    // Fetch distinct types from IncomeEntity
-    @Query("SELECT DISTINCT type FROM income")
-    suspend fun getAllIncomeTypes(): List<String>
 }

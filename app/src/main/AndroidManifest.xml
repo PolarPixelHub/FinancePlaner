@@ -20,5 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".IncomeEntriesActivity"
+            android:label="View Income Entries"/>
     </application>
 </manifest>

@@ -4,13 +4,13 @@ import android.content.Context
 import androidx.room.Room
 
 object DatabaseProvider {
-    private var instance: FinanceDatabase? = null
+    private var instance: AppDatabase? = null
 
-    fun getDatabase(context: Context): FinanceDatabase {
+    fun getDatabase(context: Context): AppDatabase {
         if (instance == null) {
             instance = Room.databaseBuilder(
                 context.applicationContext,
-                FinanceDatabase::class.java,
+                AppDatabase::class.java,
                 "income_database"
             ).build()
         }

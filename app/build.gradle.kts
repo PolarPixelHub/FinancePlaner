@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp") version "2.0.0-1.0.24"
 }
 
 android {
@@ -16,6 +17,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.incremental"] = "true"
+            }
+        }
+
     }
 
     buildTypes {
@@ -34,32 +41,39 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    ksp {
+
+    }
     buildFeatures {
         compose = true
     }
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.room.common)
-    implementation(libs.androidx.room.common.jvm)
-    implementation(libs.androidx.room.ktx)
+    // Core Libraries
+    implementation(libs.androidx.core.ktx.v1101)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v261)
     implementation(libs.androidx.appcompat)
+
+    // Room Database
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.recyclerview)
+    ksp(libs.androidx.room.compiler.v261)
+    implementation(libs.androidx.room.ktx)
+
+    // Compose UI
+    implementation(platform(libs.androidx.compose.bom.v20231000))
+    implementation(libs.ui)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.material3)
+
+    // Debugging Tools
+    debugImplementation(libs.ui.tooling)
+
+    // Testing
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.appcompat.v161)
-    implementation(libs.material)
+    androidTestImplementation(libs.androidx.junit.v115)
+    androidTestImplementation(libs.androidx.espresso.core.v351)
+    androidTestImplementation(platform(libs.androidx.compose.bom.v20241201))
+    androidTestImplementation(libs.ui.test.junit4)
 }
