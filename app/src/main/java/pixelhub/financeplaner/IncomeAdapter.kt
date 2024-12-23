@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class IncomeAdapter(private val incomeList: List<IncomeEntity>) :
+class IncomeAdapter(private val incomeList: List<IncomeEntity>, private val onItemClick: (IncomeEntity) -> Unit) :
     RecyclerView.Adapter<IncomeAdapter.IncomeViewHolder>() {
 
     class IncomeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -25,7 +25,13 @@ class IncomeAdapter(private val incomeList: List<IncomeEntity>) :
         holder.amount.text = income.amount.toString()
         holder.type.text = income.type
         holder.date.text = income.date
+
+        // Klick-Listener hinzufügen
+        holder.itemView.setOnClickListener {
+            onItemClick(income)
+        }
     }
 
     override fun getItemCount(): Int = incomeList.size
 }
+
